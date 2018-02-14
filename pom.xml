@@ -1,0 +1,53 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.mantledillusion.cache</groupId>
+	<artifactId>hydnora</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<name>Hydnora</name>
+	<description>Hydnora is a small library for concurrent caching.</description>
+	
+	<properties>
+		<!-- java compiler version -->
+		<java.compiler.version>1.8</java.compiler.version>
+
+		<!-- general maven properties -->
+		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- maven dependency versions -->
+		<concurrency-essentials.version>1.0.0</concurrency-essentials.version>
+		<junit.version>4.12</junit.version>
+	</properties>
+
+	<dependencies>
+
+		<!-- com.mantledillusion dependencies -->
+		<dependency>
+			<groupId>com.mantledillusion.essentials</groupId>
+			<artifactId>concurrency-essentials</artifactId>
+			<version>${concurrency-essentials.version}</version>
+		</dependency>
+
+		<!-- testing dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${java.compiler.version}</source>
+					<target>${java.compiler.version}</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
