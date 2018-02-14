@@ -16,7 +16,7 @@ public class ExceptionTest {
 		}
 	}
 	
-	private static final class FailingCache extends ConcurrentLoadingCache<String, ExceptionTest.StringLockIdentifier> {
+	private static final class FailingCache extends HydnoraCache<String, ExceptionTest.StringLockIdentifier> {
 		
 		@Override
 		protected String load(StringLockIdentifier id) throws Exception {

@@ -43,7 +43,7 @@ public class ConcurrencyTest {
 		}
 	}
 	
-	private final class PauseableCache extends ConcurrentLoadingCache<String, ConcurrencyTest.IndexedLockIdentifier> {
+	private final class PauseableCache extends HydnoraCache<String, ConcurrencyTest.IndexedLockIdentifier> {
 		
 		private Set<String> pausedIds = Collections.synchronizedSet(new HashSet<>());
 		

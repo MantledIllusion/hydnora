@@ -20,7 +20,7 @@ public class InvalidationTest {
 		}
 	}
 	
-	private static final class ObjectCache extends ConcurrentLoadingCache<Object, AlwaysEqualLockIdentifier> {
+	private static final class ObjectCache extends HydnoraCache<Object, AlwaysEqualLockIdentifier> {
 		
 		@Override
 		protected Object load(AlwaysEqualLockIdentifier id) throws Exception {

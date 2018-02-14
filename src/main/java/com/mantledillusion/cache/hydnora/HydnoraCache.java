@@ -41,7 +41,7 @@ import com.mantledillusion.essentials.concurrency.locks.LockIdentifier;
  * implementation may decide whether to expose a cache {@link Method} or to
  * supply own {@link Method}s to supply data access.
  */
-public abstract class ConcurrentLoadingCache<EntryType, EntryIdType extends LockIdentifier> {
+public abstract class HydnoraCache<EntryType, EntryIdType extends LockIdentifier> {
 
 	private final class Semaphore {
 		Long timeStamp;
@@ -70,7 +70,7 @@ public abstract class ConcurrentLoadingCache<EntryType, EntryIdType extends Lock
 	 * <p>
 	 * By default, entries never expire.
 	 */
-	protected ConcurrentLoadingCache() {
+	protected HydnoraCache() {
 		this(-1);
 	}
 
@@ -81,7 +81,7 @@ public abstract class ConcurrentLoadingCache<EntryType, EntryIdType extends Lock
 	 *            The interval in ms in which is needed for a loaded entry to
 	 *            expire. Default is -1, so it never expires.
 	 */
-	protected ConcurrentLoadingCache(long expiringInterval) {
+	protected HydnoraCache(long expiringInterval) {
 		this.expiringInterval = expiringInterval;
 		this.wrapRuntimeExceptions = true;
 	}
