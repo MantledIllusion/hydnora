@@ -134,15 +134,17 @@ public abstract class ConcurrentLoadingCache<EntryType, EntryIdType extends Lock
 
 	/**
 	 * Retrieves the entry for the given id from the cache, or loads it using the
-	 * given id type's {@link CacheLoadingHandler} if necessary.
+	 * overridden {@link #load(LockIdentifier)} {@link Method}.
 	 * <p>
-	 * If loading fails, an {@link EntryLoadingException} is thrown.
+	 * If loading fails, an {@link EntryLoadingException} is thrown; or the
+	 * original, if it is a {@link RuntimeException} and
+	 * {@link #isWrapRuntimeExceptions()} is set to false.
 	 * 
 	 * @param id
 	 *            The id that identifies the entry to retrieve; might <b>not</b> be
 	 *            null.
 	 * @return The entry that is identified by the given id; might be null if the
-	 *         handler that has loaded the entry returned null
+	 *         {@link #load(LockIdentifier)} {@link Method} returned null
 	 */
 	protected final EntryType get(EntryIdType id) {
 		return get(id, true, null);
@@ -150,7 +152,7 @@ public abstract class ConcurrentLoadingCache<EntryType, EntryIdType extends Lock
 
 	/**
 	 * Retrieves the entry for the given id from the cache, or loads it using the
-	 * given id type's {@link CacheLoadingHandler} if necessary.
+	 * overridden {@link #load(LockIdentifier)} {@link Method}.
 	 * <p>
 	 * If loading fails, the given exception fallback entry instance is returned.
 	 * 
@@ -161,7 +163,7 @@ public abstract class ConcurrentLoadingCache<EntryType, EntryIdType extends Lock
 	 *            The entry fallback instance to return if the entry to retrieve
 	 *            from the cache has to be loaded and loading fails.
 	 * @return The entry that is identified by the given id; might be null if the
-	 *         handler that has loaded the entry returned null
+	 *         {@link #load(LockIdentifier)} {@link Method} returned null
 	 */
 	protected final EntryType get(EntryIdType id, EntryType exceptionFallback) {
 		return get(id, false, exceptionFallback);
@@ -211,6 +213,18 @@ public abstract class ConcurrentLoadingCache<EntryType, EntryIdType extends Lock
 		}
 	}
 
+	/**
+	 * Loads the entry for the given identifier.
+	 * 
+	 * @param id
+	 *            The identifier to load the entry for; might <b>not</b> be null.
+	 * @return The loaded entry; might be null
+	 * @throws Exception
+	 *             Any {@link Exception} that might be caused by the loading
+	 *             process; will be wrapped into an {@link EntryLoadingException},
+	 *             {@link RuntimeException}s will only be wrapped if
+	 *             {@link #isWrapRuntimeExceptions()} is set to true.
+	 */
 	protected abstract EntryType load(EntryIdType id) throws Exception;
 
 	/**
@@ -247,6 +261,9 @@ public abstract class ConcurrentLoadingCache<EntryType, EntryIdType extends Lock
 	 * Invalidates the entry identified by the given id.
 	 * <p>
 	 * The reference to that entry is removed.
+	 * 
+	 * @param id
+	 *            The identifier to load the entry for; might <b>not</b> be null.
 	 */
 	protected final void invalidate(EntryIdType id) {
 		synchronized (this) {
@@ -256,9 +273,9 @@ public abstract class ConcurrentLoadingCache<EntryType, EntryIdType extends Lock
 	}
 
 	/**
-	 * Returns the size of the cache, which is the count of valid & expired entries.
+	 * Returns the size of the cache, which is the count of valid and expired entries.
 	 * 
-	 * @return The size of the cache; always >=0
+	 * @return The size of the cache; always &gt;=0
 	 */
 	protected final long size() {
 		synchronized (this) {
@@ -270,7 +287,7 @@ public abstract class ConcurrentLoadingCache<EntryType, EntryIdType extends Lock
 	 * Returns the size of the valid part of the cache, which is the count of valid
 	 * entries.
 	 * 
-	 * @return The size of the valid part of the cache; always >=0
+	 * @return The size of the valid part of the cache; always &gt;=0
 	 */
 	protected final long validSize() {
 		synchronized (this) {
