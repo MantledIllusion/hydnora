@@ -160,7 +160,7 @@ public abstract class HydnoraCache<EntryType, EntryIdType extends LockIdentifier
 	 * {@link #isWrapRuntimeExceptions()} is set to false.
 	 * 
 	 * @param <ResultType>
-	 *            The type required as result instead of <EntryType>
+	 *            The type required as result instead of the entries' type.
 	 * @param id
 	 *            The id that identifies the entry to retrieve; might <b>not</b> be
 	 *            null.
@@ -201,7 +201,7 @@ public abstract class HydnoraCache<EntryType, EntryIdType extends LockIdentifier
 	 * If loading fails, the given exception fallback entry instance is returned.
 	 * 
 	 * @param <ResultType>
-	 *            The type required as result instead of <EntryType>
+	 *            The type required as result instead of the entries' type.
 	 * @param id
 	 *            The id that identifies the entry to retrieve; might <b>not</b> be
 	 *            null.
