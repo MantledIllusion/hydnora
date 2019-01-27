@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 import com.mantledillusion.cache.hydnora.exception.EntryLoadingException;
 import com.mantledillusion.essentials.concurrency.locks.LockIdentifier;
@@ -60,7 +61,7 @@ public abstract class HydnoraCache<EntryType, EntryIdType extends LockIdentifier
 	}
 
 	private final Map<EntryIdType, Semaphore> semaphores = Collections.synchronizedMap(new HashMap<>());
-	private final Map<EntryIdType, Object> cache = Collections.synchronizedMap(new HashMap<>());
+	private final Map<EntryIdType, EntryType> cache = Collections.synchronizedMap(new HashMap<>());
 
 	private boolean wrapRuntimeExceptions;
 	private long expiringInterval;
@@ -147,7 +148,31 @@ public abstract class HydnoraCache<EntryType, EntryIdType extends LockIdentifier
 	 *         {@link #load(LockIdentifier)} {@link Method} returned null
 	 */
 	protected final EntryType get(EntryIdType id) {
-		return get(id, true, null);
+		return get(id, entry -> entry, true, null);
+	}
+
+	/**
+	 * Retrieves the entry for the given id from the cache, or loads it using the
+	 * overridden {@link #load(LockIdentifier)} {@link Method}.
+	 * <p>
+	 * If loading fails, an {@link EntryLoadingException} is thrown; or the
+	 * original, if it is a {@link RuntimeException} and
+	 * {@link #isWrapRuntimeExceptions()} is set to false.
+	 * 
+	 * @param <ResultType>
+	 *            The type required as result instead of <EntryType>
+	 * @param id
+	 *            The id that identifies the entry to retrieve; might <b>not</b> be
+	 *            null.
+	 * @param mapper
+	 *            A {@link Function} that is executed in the synchronization and
+	 *            able to map a found cache entry to the required return type; might
+	 *            <b>not</b> be null.
+	 * @return The entry that is identified by the given id; might be null if the
+	 *         {@link #load(LockIdentifier)} {@link Method} returned null
+	 */
+	protected final <ResultType> ResultType get(EntryIdType id, Function<EntryType, ResultType> mapper) {
+		return get(id, mapper, true, null);
 	}
 
 	/**
@@ -166,13 +191,41 @@ public abstract class HydnoraCache<EntryType, EntryIdType extends LockIdentifier
 	 *         {@link #load(LockIdentifier)} {@link Method} returned null
 	 */
 	protected final EntryType get(EntryIdType id, EntryType exceptionFallback) {
-		return get(id, false, exceptionFallback);
+		return get(id, entry -> entry, false, exceptionFallback);
 	}
 
-	@SuppressWarnings("unchecked")
-	private final EntryType get(EntryIdType id, boolean throwException, EntryType fallback) {
+	/**
+	 * Retrieves the entry for the given id from the cache, or loads it using the
+	 * overridden {@link #load(LockIdentifier)} {@link Method}.
+	 * <p>
+	 * If loading fails, the given exception fallback entry instance is returned.
+	 * 
+	 * @param <ResultType>
+	 *            The type required as result instead of <EntryType>
+	 * @param id
+	 *            The id that identifies the entry to retrieve; might <b>not</b> be
+	 *            null.
+	 * @param mapper
+	 *            A {@link Function} that is executed in the synchronization and
+	 *            able to map a found cache entry to the required return type; might
+	 *            <b>not</b> be null.
+	 * @param exceptionFallback
+	 *            The entry fallback instance to return if the entry to retrieve
+	 *            from the cache has to be loaded and loading fails.
+	 * @return The entry that is identified by the given id; might be null if the
+	 *         {@link #load(LockIdentifier)} {@link Method} returned null
+	 */
+	protected final <ResultType> ResultType get(EntryIdType id, Function<EntryType, ResultType> mapper,
+			EntryType exceptionFallback) {
+		return get(id, mapper, false, exceptionFallback);
+	}
+
+	private final <ResultType> ResultType get(EntryIdType id, Function<EntryType, ResultType> mapper,
+			boolean throwException, EntryType fallback) {
 		if (id == null) {
 			throw new IllegalArgumentException("Cannot retrieve an entry from the cache using a null id.");
+		} else if (mapper == null) {
+			throw new IllegalArgumentException("Cannot retrieve an entry from the cache using a null mapper.");
 		}
 
 		boolean entryExisting = false;
@@ -189,7 +242,7 @@ public abstract class HydnoraCache<EntryType, EntryIdType extends LockIdentifier
 
 		synchronized (semaphore) {
 			if (entryExisting && !semaphore.isExpired()) {
-				return (EntryType) this.cache.get(id);
+				return mapper.apply(this.cache.get(id));
 			}
 
 			try {
@@ -199,7 +252,7 @@ public abstract class HydnoraCache<EntryType, EntryIdType extends LockIdentifier
 					this.cache.put(id, entry);
 					semaphore.update();
 				}
-				return entry;
+				return mapper.apply(entry);
 			} catch (Exception e) {
 				if (throwException) {
 					if (!this.wrapRuntimeExceptions && e instanceof RuntimeException) {
@@ -207,7 +260,7 @@ public abstract class HydnoraCache<EntryType, EntryIdType extends LockIdentifier
 					}
 					throw new EntryLoadingException(id, e);
 				} else {
-					return fallback;
+					return mapper.apply(fallback);
 				}
 			}
 		}
@@ -273,7 +326,8 @@ public abstract class HydnoraCache<EntryType, EntryIdType extends LockIdentifier
 	}
 
 	/**
-	 * Returns the size of the cache, which is the count of valid and expired entries.
+	 * Returns the size of the cache, which is the count of valid and expired
+	 * entries.
 	 * 
 	 * @return The size of the cache; always &gt;=0
 	 */
