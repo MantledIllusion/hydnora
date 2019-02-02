@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import com.mantledillusion.cache.hydnora.exception.EntryLoadingException;
 import com.mantledillusion.essentials.concurrency.locks.LockIdentifier;
@@ -311,6 +313,34 @@ public abstract class HydnoraCache<EntryType, EntryIdType extends LockIdentifier
 	}
 
 	/**
+	 * Invalidates the whole cache.
+	 * <p>
+	 * References to all entries are removed.
+	 * 
+	 * @param predicate
+	 *            The predicate to check whether to invalidate the entry; might
+	 *            <b>not</b> be null.
+	 */
+	protected final int invalidate(BiPredicate<EntryIdType, EntryType> predicate) {
+		if (predicate == null) {
+			throw new IllegalArgumentException("Cannot invalidate an entry from the cache using a null predicate.");
+		}
+		synchronized (this) {
+			int invalidated = 0;
+			Iterator<Entry<EntryIdType, EntryType>> iter = this.cache.entrySet().iterator();
+			while (iter.hasNext()) {
+				Entry<EntryIdType, EntryType> entry = iter.next();
+				if (predicate.test(entry.getKey(), entry.getValue())) {
+					iter.remove();
+					this.cache.remove(entry.getKey());
+					invalidated++;
+				}
+			}
+			return invalidated;
+		}
+	}
+
+	/**
 	 * Invalidates the entry identified by the given id.
 	 * <p>
 	 * The reference to that entry is removed.
@@ -322,6 +352,33 @@ public abstract class HydnoraCache<EntryType, EntryIdType extends LockIdentifier
 		synchronized (this) {
 			this.cache.remove(id);
 			this.semaphores.remove(id);
+		}
+	}
+
+	/**
+	 * Invalidates the entry identified by the given id.
+	 * <p>
+	 * The reference to that entry is removed.
+	 * 
+	 * @param id
+	 *            The identifier to load the entry for; might <b>not</b> be null.
+	 * @param predicate
+	 *            The predicate to check whether to invalidate the entry; might
+	 *            <b>not</b> be null.
+	 */
+	protected final boolean invalidate(EntryIdType id, Predicate<EntryType> predicate) {
+		if (predicate == null) {
+			throw new IllegalArgumentException("Cannot invalidate an entry from the cache using a null predicate.");
+		}
+		synchronized (this) {
+			if (this.cache.containsKey(id)) {
+				if (predicate.test(this.cache.get(id))) {
+					this.cache.remove(id);
+					this.semaphores.remove(id);
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 
