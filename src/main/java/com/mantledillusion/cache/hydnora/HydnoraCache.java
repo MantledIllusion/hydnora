@@ -243,7 +243,7 @@ public abstract class HydnoraCache<EntryType, EntryIdType extends LockIdentifier
 		}
 
 		synchronized (semaphore) {
-			if (entryExisting && !semaphore.isExpired()) {
+			if (entryExisting && !semaphore.isExpired() && this.cache.containsKey(id)) {
 				return mapper.apply(this.cache.get(id));
 			}
 
