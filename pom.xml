@@ -4,7 +4,7 @@
 
 	<groupId>com.mantledillusion.cache</groupId>
 	<artifactId>hydnora</artifactId>
-	<version>1.2.1-SNAPSHOT</version>
+	<version>1.2.1</version>
 
 	<name>Hydnora</name>
 	<description>Hydnora is a small library for concurrent caching.</description>
