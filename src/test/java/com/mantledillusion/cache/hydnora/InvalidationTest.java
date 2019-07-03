@@ -7,26 +7,19 @@ import static org.junit.Assert.assertSame;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.mantledillusion.essentials.concurrency.locks.LockIdentifier;
-
 public class InvalidationTest {
 	
 	private static final int EXPIRING_INTERVAL = 100;
-
-	private static final class AlwaysEqualLockIdentifier extends LockIdentifier {
-		
-		public AlwaysEqualLockIdentifier() {
-			super("id");
-		}
-	}
 	
-	private static final class ObjectCache extends HydnoraCache<Object, AlwaysEqualLockIdentifier> {
+	private static final class ObjectCache extends HydnoraCache<String, Object> {
 		
 		@Override
-		protected Object load(AlwaysEqualLockIdentifier id) throws Exception {
+		protected Object load(String id) throws Exception {
 			return new Object();
 		}
 	}
+
+	private static final String ID = "a";
 	
 	private ObjectCache cache;
 	
@@ -37,29 +30,27 @@ public class InvalidationTest {
 	
 	@Test
 	public void testInvalidation() {
-		AlwaysEqualLockIdentifier id = new AlwaysEqualLockIdentifier();
-		
-		Object o1 = this.cache.get(id);
-		Object o2 = this.cache.get(id);
+		Object o1 = this.cache.get(ID);
+		Object o2 = this.cache.get(ID);
 
+		assertSame(o1, o2);
 		assertEquals(1, this.cache.size());
-		assertEquals(1, this.cache.validSize());
+		assertEquals(0, this.cache.invalidatedSize());
 		this.cache.invalidate();
 		assertEquals(0, this.cache.size());
-		assertEquals(0, this.cache.validSize());
+		assertEquals(0, this.cache.invalidatedSize());
 		
-		Object o3 = this.cache.get(id);
+		Object o3 = this.cache.get(ID);
 
-		assertEquals(1, this.cache.size());
-		assertEquals(1, this.cache.validSize());
-		this.cache.invalidate(id);
-		assertEquals(0, this.cache.size());
-		assertEquals(0, this.cache.validSize());
-		
-		Object o4 = this.cache.get(id);
-		
-		assertSame(o1, o2);
 		assertNotSame(o2, o3);
+		assertEquals(1, this.cache.size());
+		assertEquals(0, this.cache.invalidatedSize());
+		this.cache.invalidate(ID);
+		assertEquals(0, this.cache.size());
+		assertEquals(0, this.cache.invalidatedSize());
+		
+		Object o4 = this.cache.get(ID);
+
 		assertNotSame(o3, o4);
 	}
 	
@@ -67,25 +58,25 @@ public class InvalidationTest {
 	public void testExpiring() throws InterruptedException {
 		this.cache.setExpiringInterval(EXPIRING_INTERVAL);
 		
-		AlwaysEqualLockIdentifier id = new AlwaysEqualLockIdentifier();
-		
-		Object o1 = this.cache.get(id);
+		Object o1 = this.cache.get(ID);
 		assertEquals(1, this.cache.size());
-		assertEquals(1, this.cache.validSize());
+		assertEquals(0, this.cache.invalidatedSize());
 		
 		Thread.sleep(EXPIRING_INTERVAL);
-		assertEquals(1, this.cache.size());
-		assertEquals(0, this.cache.validSize());
+		assertEquals(0, this.cache.size());
+		assertEquals(1, this.cache.invalidatedSize());
 
-		Object o2 = this.cache.get(id);
-		assertEquals(1, this.cache.size());
-		assertEquals(1, this.cache.validSize());
-
+		Object o2 = this.cache.get(ID);
 		assertNotSame(o1, o2);
+		assertEquals(1, this.cache.size());
+		assertEquals(0, this.cache.invalidatedSize());
 
 		Thread.sleep(EXPIRING_INTERVAL);
+		assertEquals(0, this.cache.size());
+		assertEquals(1, this.cache.invalidatedSize());
+
 		this.cache.clean();
 		assertEquals(0, this.cache.size());
-		assertEquals(0, this.cache.validSize());
+		assertEquals(0, this.cache.invalidatedSize());
 	}
 }

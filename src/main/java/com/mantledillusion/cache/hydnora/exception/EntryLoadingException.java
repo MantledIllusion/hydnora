@@ -1,7 +1,6 @@
 package com.mantledillusion.cache.hydnora.exception;
 
 import com.mantledillusion.cache.hydnora.HydnoraCache;
-import com.mantledillusion.essentials.concurrency.locks.LockIdentifier;
 
 /**
  * {@link RuntimeException} that might by thrown by an
@@ -12,7 +11,7 @@ public final class EntryLoadingException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
-	public EntryLoadingException(LockIdentifier id, Exception cause) {
-		super("Unable to load entry for entry id with the content '" + id + "': " + cause.getMessage(), cause);
+	public EntryLoadingException(Object id, Exception cause) {
+		super("Unable to load entry for entry id with '" + id + "': " + cause.getMessage(), cause);
 	}
 }
