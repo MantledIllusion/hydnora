@@ -106,7 +106,7 @@ Note that invalidation synchronizes the whole cache, causing **all** threads try
 
 ## Memory Leak Protection
 
-Even if an expiry interval is used and manual calls invalidate entries from time to time, depending on the size of its entries a highly used cache might still grow significantly, taking up a huge part of even all the JVMs RAM.
+Even if an expiry interval is used and manual calls invalidate entries from time to time, depending on the size of its entries, a highly used cache might still grow significantly, taking up a huge part (or even all) of the JVMs RAM.
 
 To protect against such a memory leak, Hydnora supports 3 modes of how entries are referenced by the cache:
 - STRONG (default): entries are referenced directly; entries are never garbage collected
