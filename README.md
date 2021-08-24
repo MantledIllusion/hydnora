@@ -5,6 +5,16 @@ Hydnora Africana is an underground living plant. The only overground part is its
 flower whose small opening leads down into the plant, trapping entering insect. Instead of digesting the 
 insects like carnivorous plants would, Hydrona just pollinates and releases them once it is mature.
 
+```xml
+<dependency>
+    <groupId>com.mantledillusion.cache</groupId>
+    <artifactId>hydnora</artifactId>
+</dependency>
+
+```
+
+Get the newest version at  [mvnrepository.com/hydnora](https://mvnrepository.com/artifact/com.mantledillusion.cache/hydnora)
+
 ## Creating Caches
 In order to implement a cache, the base class **HydnoraCache** has to be extended, providing two generic types:
 - EntryIdType: The type of the key used to identify the cache's entries
