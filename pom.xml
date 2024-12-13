@@ -36,7 +36,7 @@
 
 		<!-- maven dependency versions -->
 		<concurrency-essentials.version>1.0.0</concurrency-essentials.version>
-		<junit.version>4.12</junit.version>
+		<junit.version>4.13.1</junit.version>
 	</properties>
 
 	<scm>
