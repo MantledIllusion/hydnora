@@ -417,6 +417,28 @@ public abstract class HydnoraCache<EntryIdType, EntryType> {
 	protected abstract EntryType load(EntryIdType id) throws Exception;
 
 	/**
+	 * Inserts the given entry into the cache for the given id, possibly replacing the current entry of that id.
+	 *
+	 * @param id
+	 * 				The identifier to insert the entry for; might <b>not</b> be null.
+	 * @param entry
+	 * 				The entry to insert; might be null.
+	 */
+	protected void put(EntryIdType id, EntryType entry) {
+		if (id == null) {
+			throw new IllegalArgumentException("Cannot insert an entry to the cache using a null id.");
+		}
+
+		synchronized (this) {
+			if (!this.semaphores.containsKey(id)) {
+				this.semaphores.put(id, new Semaphore());
+			}
+
+			this.cache.put(id, this.mode.toEntry(entry));
+		}
+	}
+
+	/**
 	 * Invalidates all expired entries in the cache.
 	 * <p>
 	 * References to invalidated entries are removed.
